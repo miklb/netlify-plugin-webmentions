@@ -21,37 +21,42 @@ module.exports = {
       return;
     }
 
-    try {
-      await new Promise((resolve, reject) => {
-        console.log(
-          `Discovering Webmentions in ${feedUrl} with a limit of ${limit} ${
-            limit === 1 ? "entry" : "entries"
-          }`
-        );
-        console.log("");
+    let errorCount = 0;
 
-        const wm = new Webmention({ limit, send: true });
+    await new Promise((resolve) => {
+      console.log(
+        `Discovering Webmentions in ${feedUrl} with a limit of ${limit} ${
+          limit === 1 ? "entry" : "entries"
+        }`
+      );
+      console.log("");
 
-        wm.on("error", (e) => reject(e));
+      const wm = new Webmention({ limit, send: true });
 
-        wm.on("sent", (res) => {
-          console.log(
-            `Sent ${res.source} to ${res.endpoint.url} (${res.endpoint.type})`
-          );
-          if (res.error) {
-            console.log(`Error sending to ${res.endpoint.url}: ${res.error}`);
-          }
-          console.log("");
-        });
-
-        wm.on("end", () => {
-          resolve();
-        });
-
-        wm.fetch(feedUrl);
+      wm.on("error", (e) => {
+        // Log errors but continue - timeouts shouldn't fail the build
+        console.log(`Warning: ${e.message || e}`);
+        errorCount++;
       });
-    } catch (e) {
-      utils.build.failPlugin(e);
-    }
+
+      wm.on("sent", (res) => {
+        console.log(
+          `Sent ${res.source} to ${res.endpoint.url} (${res.endpoint.type})`
+        );
+        if (res.error) {
+          console.log(`Error sending to ${res.endpoint.url}: ${res.error}`);
+        }
+        console.log("");
+      });
+
+      wm.on("end", () => {
+        if (errorCount > 0) {
+          console.log(`Completed with ${errorCount} warning(s)`);
+        }
+        resolve();
+      });
+
+      wm.fetch(feedUrl);
+    });
   },
 };
