@@ -1,5 +1,17 @@
 # Netlify Build Plugin: Automatically discover any webmentions and send them after every production build
 
+> **Note:** This is a fork of [CodeFoodPixels/netlify-plugin-webmentions](https://github.com/CodeFoodPixels/netlify-plugin-webmentions) with improved error handling that logs warnings instead of failing the build on timeouts/errors.
+>
+> To use this fork instead of the npm package (which also overrides the Netlify app plugin):
+> ```bash
+> npm install -D github:miklb/netlify-plugin-webmentions
+> ```
+> Then add to `netlify.toml`:
+> ```toml
+> [[plugins]]
+> package = "netlify-plugin-webmentions"
+> ```
+
 Automatically discover any webmentions and send them after every production build.
 
 This plugin will send webmentions to any mentioned websites that have a webmention endpoint after every production build. The plugin can be used without any configuration if using the defaults.
